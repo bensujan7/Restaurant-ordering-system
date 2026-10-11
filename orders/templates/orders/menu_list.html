@@ -1,0 +1,103 @@
+{% extends 'orders/base.html' %}
+
+{% block content %}
+<!-- Navigation Tabs -->
+<div class="mb-6 border-b border-gray-200">
+    <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+        <a href="{% url 'menu_list' %}" 
+           class="{% if request.resolver_match.url_name == 'menu_list' %}border-blue-500 text-blue-600{% else %}border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition">
+            🍽️ Menu Items
+        </a>
+        <a href="{% url 'category_list' %}" 
+           class="{% if 'category' in request.resolver_match.url_name %}border-blue-500 text-blue-600{% else %}border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition">
+            🏷️ Categories
+        </a>
+    </nav>
+</div>
+<div class="max-w-7xl mx-auto space-y-6">
+    <!-- Page Header & Actions -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">🍽️ Menu Management</h1>
+            <p class="text-sm text-gray-500">Manage dishes, pricing, categories, and item availability.</p>
+        </div>
+        <div>
+            <a href="{% url 'menu_item_create' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg text-sm font-semibold shadow transition flex items-center gap-2">
+                + Add Menu Item
+            </a>
+        </div>
+    </div>
+    
+    <div class="flex flex-wrap gap-2 border-b border-gray-200 pb-4">
+        <a href="{% url 'menu_list' %}" 
+        class="px-4 py-2 rounded-lg text-sm font-semibold transition {% if not selected_category %}bg-blue-600 text-white shadow{% else %}bg-white text-gray-700 border border-gray-300 hover:bg-gray-50{% endif %}">
+            All Items
+        </a>
+        {% for cat in categories %}
+            <a href="{% url 'menu_list' %}?category={{ cat.id }}" 
+            class="px-4 py-2 rounded-lg text-sm font-semibold transition {% if selected_category == cat.id|stringformat:'s' %}bg-blue-600 text-white shadow{% else %}bg-white text-gray-700 border border-gray-300 hover:bg-gray-50{% endif %}">
+                {{ cat.name }}
+            </a>
+        {% endfor %}
+    </div>
+    <!-- Menu Items Card Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {% for item in menu_items %}
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col justify-between hover:shadow-md transition">
+                <div>
+                    <!-- Item Image / Placeholder -->
+                    <div class="relative h-48 bg-gray-100 overflow-hidden">
+                        {% if item.image %}
+                            <img src="{{ item.image.url }}" alt="{{ item.name }}" class="w-full h-full object-cover">
+                        {% else %}
+                            <div class="w-full h-full flex items-center justify-center text-gray-400 text-sm font-medium">
+                                No Image Available
+                            </div>
+                        {% endif %}
+                        <!-- Availability Badge -->
+                        <div class="absolute top-3 right-3">
+                            {% if item.is_available %}
+                                <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 shadow-sm">Available</span>
+                            {% else %}
+                                <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 shadow-sm">Unavailable</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Item Details -->
+                    <div class="p-4 space-y-2">
+                        <div class="flex justify-between items-start gap-2">
+                            <h3 class="font-bold text-gray-900 text-base leading-snug">{{ item.name }}</h3>
+                            <span class="font-bold text-blue-600 text-base">Rs {{ item.price }}</span>
+                        </div>
+                        
+                        <div>
+                            <span class="inline-block bg-gray-100 text-gray-700 text-xs font-medium px-2 py-0.5 rounded">
+                                {{ item.category|default:"General" }}
+                            </span>
+                        </div>
+
+                        <p class="text-xs text-gray-500 line-clamp-2">
+                            {{ item.description|default:"No description provided." }}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Card Actions Bottom Bar -->
+                <div class="px-4 py-3 bg-gray-50 border-t border-gray-100 flex justify-end gap-2">
+                    <a href="{% url 'menu_item_update' pk=item.id %}" class="text-blue-600 hover:text-blue-800 font-medium text-xs bg-white border border-gray-300 px-3 py-1.5 rounded-lg shadow-sm transition">
+                        Edit
+                    </a>
+                    <a href="{% url 'menu_delete' pk=item.id %}" onclick="return confirm('Are you sure you want to delete {{ item.name }}?');" class="text-red-600 hover:text-red-800 font-medium text-xs bg-white border border-gray-300 px-3 py-1.5 rounded-lg shadow-sm transition">
+                        Delete
+                    </a>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-span-full py-12 text-center text-gray-500 font-medium bg-white rounded-xl border border-gray-200">
+                No menu items found. Click "+ Add Menu Item" to get started.
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

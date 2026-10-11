@@ -1,0 +1,97 @@
+{% extends 'orders/base.html' %}
+
+{% block content %}
+<div class="w-full px-4 sm:px-6 lg:px-8 mt-3 space-y-6">
+    <!-- Header with Title and Create Button -->
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-gray-800">📜 Order History & Billing Logs</h2>
+        <a href="{% url 'order_create' %}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-lg shadow transition duration-150">
+            + Create New Order
+        </a>
+    </div>
+
+    <!-- Summary Metrics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div class="bg-emerald-600 text-white shadow-sm rounded-xl p-4 flex flex-col justify-between">
+            <div class="text-xs uppercase font-bold tracking-wider opacity-90">Completed Orders</div>
+            <div class="text-3xl font-bold mt-1">{{ orders.count }}</div>
+        </div>
+        <div class="bg-gray-900 text-white shadow-sm rounded-xl p-4 flex flex-col justify-between">
+            <div class="text-xs uppercase font-bold tracking-wider opacity-90">System Status</div>
+            <div class="text-3xl font-bold mt-1">Active</div>
+        </div>
+    </div>
+
+    <!-- Orders Table Card -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <!-- Card Header -->
+        <div class="bg-gray-900 text-white px-6 py-4 flex justify-between items-center">
+            <h5 class="text-lg font-medium m-0">Past Orders</h5>
+            <span class="bg-gray-600 text-white text-xs font-semibold px-2.5 py-1 rounded-full">{{ orders.count }} Total</span>
+        </div>
+
+        <!-- Card Body -->
+        <div class="p-0">
+            {% if not orders %}
+                <div class="bg-sky-50 border border-sky-100 text-sky-900 text-center mx-6 my-6 p-6 rounded-xl">
+                    <h5 class="font-bold text-base mb-1">No historical orders found.</h5>
+                    <p class="text-sm text-sky-700 mb-0">Completed or cancelled orders will appear here.</p>
+                </div>
+            {% else %}
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <!-- Table Head -->
+                        <thead>
+                            <tr class="bg-gray-50 text-gray-600 text-xs uppercase tracking-wider border-b border-gray-200">
+                                <th class="py-3 px-6 font-semibold">Order ID</th>
+                                <th class="py-3 px-6 font-semibold">Table / Type</th>
+                                <th class="py-3 px-6 font-semibold">Customer</th>
+                                <th class="py-3 px-6 font-semibold">Server</th>
+                                <th class="py-3 px-6 font-semibold">Date & Time</th>
+                                <th class="py-3 px-6 font-semibold">Total</th>
+                                <th class="py-3 px-6 font-semibold">Status</th>
+                                <th class="py-3 px-6 font-semibold text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <!-- Table Body -->
+                        <tbody class="divide-y divide-gray-200 text-sm align-middle">
+                            {% for order in orders %}
+                                <tr class="hover:bg-gray-50 transition duration-150">
+                                    <td class="py-4 px-6 font-bold text-gray-900">#{{ order.id }}</td>
+                                    <td class="py-4 px-6">
+                                        {% if order.table %}
+                                            <span class="bg-gray-500 text-white text-xs font-semibold px-2.5 py-1 rounded">Table {{ order.table.table_number }}</span>
+                                        {% else %}
+                                            <span class="bg-sky-100 text-sky-900 text-xs font-semibold px-2.5 py-1 rounded">Takeout</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="py-4 px-6 text-gray-700">{{ order.customer_name|default:"Guest" }}</td>
+                                    <td class="py-4 px-6 text-gray-700">{{ order.server.username|default:"Staff" }}</td>
+                                    <td class="py-4 px-6 text-gray-600">{{ order.created_at|date:"M d, Y - h:i A" }}</td>
+                                    <td class="py-4 px-6 font-bold text-emerald-600">Rs {{ order.grand_total }}</td>
+                                    <td class="py-4 px-6">
+                                        {% if order.status == 'PAID' %}
+                                            <span class="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-1 rounded">Paid</span>
+                                        {% elif order.status == 'SERVED' %}
+                                            <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-1 rounded">Served</span>
+                                        {% elif order.status == 'CANCELLED' %}
+                                            <span class="bg-rose-100 text-rose-800 text-xs font-semibold px-2.5 py-1 rounded">Cancelled</span>
+                                        {% else %}
+                                            <span class="bg-amber-100 text-amber-900 text-xs font-semibold px-2.5 py-1 rounded">{{ order.get_status_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="py-4 px-6 text-end">
+                                        <a href="{% url 'order_detail' pk=order.id %}" class="inline-block border border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white text-xs font-semibold px-3 py-1.5 rounded transition duration-150">
+                                            View Receipt
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

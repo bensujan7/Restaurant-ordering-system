@@ -1,0 +1,127 @@
+{% extends 'orders/base.html' %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Page Header -->
+    <div class="flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-gray-800">📊 Restaurant Dashboard</h1>
+        <div class="space-x-2">
+            <a href="{% url 'order_create' %}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm font-semibold shadow">
+                + New Order (POS)
+            </a>
+           
+        </div>
+    </div>
+
+    <!-- Analytics / Summary Metric Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <!-- Total Sales -->
+        <div class="bg-white p-5 rounded-lg shadow border border-gray-200">
+            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Sales Today</p>
+            <p class="text-2xl font-bold text-gray-900 mt-1">Rs {{ total_sales|default:"0.00" }}</p>
+        </div>
+
+        <!-- Active Orders -->
+        <div class="bg-white p-5 rounded-lg shadow border border-gray-200">
+            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Active Kitchen Orders</p>
+            <p class="text-2xl font-bold text-amber-600 mt-1">{{ active_orders_count|default:"0" }}</p>
+        </div>
+
+        <!-- Occupied Tables -->
+        <div class="bg-white p-5 rounded-lg shadow border border-gray-200">
+            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Table Occupancy</p>
+            <p class="text-2xl font-bold text-blue-600 mt-1">{{ occupied_tables_count|default:"0" }} / {{ total_tables_count|default:"0" }}</p>
+        </div>
+
+        <!-- Completed Orders -->
+        <div class="bg-white p-5 rounded-lg shadow border border-gray-200">
+            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Completed Orders</p>
+            <p class="text-2xl font-bold text-green-600 mt-1">{{ completed_orders_count|default:"0" }}</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-1 space-y-4">
+                <!-- Kitchen Status Breakdown & KDS Shortcut Widget -->
+            <div class="bg-white rounded-lg shadow border border-gray-200 p-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div class="flex items-center space-x-6">
+                    <div>
+                        <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider">Pending</span>
+                        <span class="text-xl font-bold text-yellow-600">{{ pending_count|default:"0" }}</span>
+                    </div>
+                    <div class="border-l pl-6">
+                        <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider">Preparing</span>
+                        <span class="text-xl font-bold text-blue-600">{{ preparing_count|default:"0" }}</span>
+                    </div>
+                    <div class="border-l pl-6">
+                        <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider">Ready</span>
+                        <span class="text-xl font-bold text-indigo-600">{{ ready_count|default:"0" }}</span>
+                    </div>
+                </div>
+                <div>
+                    <a href="{% url 'kitchen_display' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg text-sm font-semibold shadow transition flex items-center gap-2">
+                        👨‍🍳 Open Live KDS
+                    </a>
+                </div>
+            </div>
+        </div>
+    
+        <div class="lg:col-span-2">
+                <!-- Recent Orders Section -->
+            <div class="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                    <h2 class="font-bold text-gray-800 text-lg">Recent Orders</h2>
+                    <a href="{% url 'order_history' %}" class="text-sm text-blue-600 hover:underline">View All History →</a>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 text-gray-600 text-xs uppercase tracking-wider border-b border-gray-200">
+                                <th class="py-3 px-6">Order ID</th>
+                                <th class="py-3 px-6">Table / Guest</th>
+                                <th class="py-3 px-6">Status</th>
+                                <th class="py-3 px-6">Total</th>
+                                <th class="py-3 px-6">Time</th>
+                                <th class="py-3 px-6 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 text-sm">
+                            {% for order in recent_orders %}
+                                <tr class="hover:bg-gray-50">
+                                    <td class="py-3 px-6 font-medium text-gray-900">#{{ order.id }}</td>
+                                    <td class="py-3 px-6 text-gray-700">
+                                        {% if order.table %}Table {{ order.table.table_number }} (Party: {{ order.party_size }}){% else %}Takeout{% endif %}
+                                    </td>
+                                    <td class="py-3 px-6">
+                                        <span class="px-2 py-1 text-xs font-semibold rounded 
+                                            {% if order.status == 'PENDING' %} bg-yellow-100 text-yellow-800
+                                            {% elif order.status == 'PREPARING' %} bg-blue-100 text-blue-800
+                                            {% elif order.status == 'READY' %} bg-indigo-100 text-indigo-800
+                                            {% elif order.status == 'SERVED' %} bg-teal-100 text-teal-800
+                                            {% elif order.status == 'PAID' %} bg-green-100 text-green-800
+                                            {% else %} bg-gray-100 text-gray-800 {% endif %}">
+                                            {{ order.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td class="py-3 px-6 font-semibold text-gray-900">Rs {{ order.grand_total }}</td>
+                                    <td class="py-3 px-6 text-gray-500">{{ order.created_at|date:"h:i A" }}</td>
+                                    <td class="py-3 px-6 text-right">
+                                        <a href="{% url 'order_detail' pk=order.id %}" class="text-blue-600 hover:text-blue-800 font-medium">Details</a>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="6" class="py-6 text-center text-gray-500">No recent orders found.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
