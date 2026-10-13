@@ -54,7 +54,7 @@
                             </td>
                             <td class="py-3 text-center text-gray-600">{{ item.quantity }}</td>
                             <td class="py-3 text-right text-gray-600">Rs {{ item.menu_item.price }}</td>
-                            <td class="py-3 text-right font-semibold text-gray-900">${{ item.total_price }}</td>
+                            <td class="py-3 text-right font-semibold text-gray-900">Rs {{ item.subtotal }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -64,7 +64,7 @@
         <!-- Total Calculation -->
         <div class="border-t pt-4 flex justify-between items-center">
             <span class="font-bold text-lg text-gray-800">Grand Total</span>
-            <span class="font-extrabold text-2xl text-green-600">${{ order.grand_total }}</span>
+            <span class="font-extrabold text-2xl text-green-600">Rs {{ order.grand_total }}</span>
         </div>
 
         <!-- Payment Actions -->

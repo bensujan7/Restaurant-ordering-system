@@ -89,12 +89,12 @@ class Order(models.Model):
     def __str__(self):
         return f"Order #{self.id} - Table {self.table.table_number if self.table else 'Takeout'} [{self.status}]"
 
-    def calculate_totals(self, tax_rate=Decimal('0.10')):
-        """Recalculate subtotal, tax, and grand total from related order items."""
+    def calculate_totals(self, tax_rate=Decimal('0.00')):
+       
         items_subtotal = sum(item.subtotal for item in self.items.all())
         self.subtotal = items_subtotal
         self.tax_amount = items_subtotal * tax_rate
-        self.grand_total = self.subtotal + self.tax_amount
+        self.grand_total = self.subtotal    + self.tax_amount
         self.save()
 
 
